@@ -44,6 +44,7 @@ type KustomizeBuildOpts struct {
 	SetFlags           []string
 	EnableAlphaPlugins bool
 	Namespace          string
+	HelmBinary         string
 }
 
 func (o *KustomizeBuildOpts) SetKustomizeBuildOption(opts *KustomizeBuildOpts) error {
@@ -154,6 +155,10 @@ func (r *Runner) KustomizeBuild(srcDir string, tempDir string, opts ...Kustomize
 		return "", err
 	}
 	kustomizeArgs = append(kustomizeArgs, f)
+
+	if u.HelmBinary != "" {
+		kustomizeArgs = append(kustomizeArgs, "--enable-helm", "--helm-command="+u.HelmBinary)
+	}
 
 	out, err := r.runInDir(tempDir, r.kustomizeBin(), append(kustomizeArgs, tempDir)...)
 	if err != nil {
