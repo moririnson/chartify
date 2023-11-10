@@ -1,7 +1,7 @@
 name: go
 on:
   push:
-    branches: [ main, master ]
+    branches: [ hogehoge ]
   pull_request:
     branches: [ main, master ]
 jobs:
