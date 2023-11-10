@@ -156,9 +156,9 @@ func (r *Runner) KustomizeBuild(srcDir string, tempDir string, opts ...Kustomize
 	}
 	kustomizeArgs = append(kustomizeArgs, f)
 
-	if u.HelmBinary != "" {
-		kustomizeArgs = append(kustomizeArgs, "--enable-helm", "--helm-command="+u.HelmBinary)
-	}
+	//if u.HelmBinary != "" {
+	//	kustomizeArgs = append(kustomizeArgs, "--enable-helm", "--helm-command="+u.HelmBinary)
+	//}
 
 	out, err := r.runInDir(tempDir, r.kustomizeBin(), append(kustomizeArgs, tempDir)...)
 	if err != nil {

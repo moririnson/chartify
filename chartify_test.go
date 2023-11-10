@@ -24,7 +24,9 @@ func TestReadAdhocDependencies(t *testing.T) {
 
 	setupHelmConfig(t)
 	repo := "myrepo"
-	startServer(t, repo)
+	startServer(t, ServerOptions{
+		repo: repo,
+	})
 
 	run := func(tc testcase) {
 		t.Helper()

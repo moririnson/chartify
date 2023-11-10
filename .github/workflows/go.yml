@@ -1,9 +1,9 @@
 name: go
 on:
   push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+    branches: [ kustomize-respect-helm-binary-test ]
+#  pull_request:
+#    branches: [ main, master ]
 jobs:
   build:
     name: test
@@ -22,6 +22,7 @@ jobs:
     - name: Test
       run: |
         mkdir ./bin
+        mkdir ./tmp
 
         HELM_VERSION=v3.11.1
         HELM_LOCATION="https://get.helm.sh"
@@ -30,6 +31,7 @@ jobs:
             echo Extracting ${HELM_FILENAME}... && \
             tar zxvf ${HELM_FILENAME} && mv linux-amd64/helm ./bin/ && \
             rm ${HELM_FILENAME} && rm -r linux-amd64
+        cp ./bin/helm ./tmp
 
         curl -Ls "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
         mv kustomize ./bin/

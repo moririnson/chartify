@@ -13,17 +13,13 @@ import (
 	"github.com/helmfile/chartify/helmtesting"
 )
 
-var helm string = "helm"
-
 func TestIntegration(t *testing.T) {
-	if h := os.Getenv("HELM_BIN"); h != "" {
-		helm = h
-	}
-
 	setupHelmConfig(t)
 
 	repo := "myrepo"
-	startServer(t, repo)
+	startServer(t, ServerOptions{
+		repo: repo,
+	})
 
 	// SAVE_SNAPSHOT=1 go1.20 test -run ^TestIntegration/adhoc_dependency_condition$ ./
 	runTest(t, integrationTestCase{
@@ -330,6 +326,16 @@ func TestIntegration(t *testing.T) {
 			EnableKustomizeAlphaPlugins: true,
 		},
 	})
+
+	// SAVE_SNAPSHOT=1 go1.20 test -run ^TestIntegration/kustomize_with_helm_charts$ ./
+	runTest(t, integrationTestCase{
+		description: "kustomize_with_helm_charts",
+		release:     "myapp",
+		chart:       "./testdata/kustomize_with_helm_charts",
+		opts: ChartifyOpts{
+			EnableKustomizeAlphaPlugins: true,
+		},
+	})
 }
 
 func setupHelmConfig(t *testing.T) {
@@ -341,7 +347,7 @@ func setupHelmConfig(t *testing.T) {
 	os.Setenv("HELM_CONFIG_HOME", helmConfigHone)
 }
 
-func startServer(t *testing.T, repo string) {
+func startServer(t *testing.T, opts ServerOptions) {
 	t.Helper()
 
 	port := 18080
@@ -350,7 +356,7 @@ func startServer(t *testing.T, repo string) {
 		ChartsDir: "testdata/charts",
 	}
 	s := helmtesting.StartChartRepoServer(t, srv)
-	helmtesting.AddChartRepo(t, helm, repo, s)
+	helmtesting.AddChartRepo(t, helm(opts.helm), opts.repo, s)
 }
 
 func runTest(t *testing.T, tc integrationTestCase) {
@@ -366,6 +372,7 @@ func doTest(t *testing.T, tc integrationTestCase) {
 
 	ctx := context.Background()
 
+	helm := helm(tc.helm)
 	r := New(UseHelm3(true), HelmBin(helm))
 
 	tmpDir, err := r.Chartify(tc.release, tc.chart, WithChartifyOpts(&tc.opts))
@@ -421,9 +428,25 @@ func doTest(t *testing.T, tc integrationTestCase) {
 	require.Equal(t, want, got)
 }
 
+func helm(h *string) string {
+	if h != nil {
+		return *h
+	}
+	if helmBinEnv := os.Getenv("HELM_BIN"); helmBinEnv != "" {
+		return helmBinEnv
+	}
+	return "helm"
+}
+
 type integrationTestCase struct {
 	description string
 	release     string
 	chart       string
+	helm        *string
 	opts        ChartifyOpts
+}
+
+type ServerOptions struct {
+	repo string
+	helm *string
 }
